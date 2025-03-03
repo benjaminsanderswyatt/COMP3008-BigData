@@ -1,0 +1,188 @@
+// ---------- TASK 1 ----------
+
+// Load number ones
+LOAD CSV WITH HEADERS FROM 'file:///number_ones.csv' AS row
+CREATE (n:NumberOne {
+    Date: row.DATE,
+    Title: row.TITLE,
+    Artist: row.ARTIST,
+    WKS: toInteger(row.WKS),
+    Year: toInteger(row.YEAR)
+});
+
+// Load spotify data
+LOAD CSV WITH HEADERS FROM 'file:///spotify_data.csv' AS row
+CREATE (s:SpotifyData {
+    Title: row.TITLE,
+    Artist: row.ARTIST,
+	SpotifyID: row.Spotify.ID,
+    Danceability: toFloat(row.danceability),
+	Energy: toFloat(row.energy),
+	Key: toInteger(row.key),
+	Loudness: toFloat(row.loudness),
+	Mode: toInteger(row.mode),
+	Speechiness: toFloat(row.speechiness),
+	Acousticness: toFloat(row.acousticness),
+	Instrumentalness: toFloat(row.instrumentalness),
+	Liveness: toFloat(row.liveness),
+    Valence: toFloat(row.valence),
+	Tempo: toFloat(row.tempo),
+	DurationMs: toInteger(row.duration_ms),
+	TimeSignature: toInteger(row.time_signature)
+});
+
+// Create indexes
+CREATE INDEX numberone_title_artist IF NOT EXISTS
+FOR (n:NumberOne) ON (n.Title, n.Artist);
+
+CREATE INDEX spotifydata_title_artist IF NOT EXISTS
+FOR (s:SpotifyData) ON (s.Title, s.Artist);
+
+// Create relationship
+MATCH (n:NumberOne), (s:SpotifyData)
+WHERE n.Title = s.Title AND n.Artist = s.Artist
+CREATE (n)-[:AUDIO_FEATURES]->(s);
+
+
+
+
+
+// ---------- TASK 2 ----------
+
+MATCH (n:NumberOne)
+WITH n.Artist AS Artist, SUM(n.WKS) AS TotalWeeks
+WHERE TotalWeeks > 4
+RETURN Artist, TotalWeeks
+ORDER BY TotalWeeks DESC;
+
+
+
+╒═════════════════════════════════════════════╤══════════╕
+│Artist                                       │TotalWeeks│
+╞═════════════════════════════════════════════╪══════════╡
+│"ED SHEERAN"                                 │36        │
+├─────────────────────────────────────────────┼──────────┤
+│"ARIANA GRANDE"                              │17        │
+├─────────────────────────────────────────────┼──────────┤
+│"DRAKE FT. WIZKID & KYLA"                    │15        │
+├─────────────────────────────────────────────┼──────────┤
+│"DRAKE"                                      │15        │
+├─────────────────────────────────────────────┼──────────┤
+│"OLIVIA RODRIGO"                             │15        │
+├─────────────────────────────────────────────┼──────────┤
+│"JUSTIN BIEBER"                              │13        │
+├─────────────────────────────────────────────┼──────────┤
+│"ADELE"                                      │11        │
+├─────────────────────────────────────────────┼──────────┤
+│"HARRY STYLES"                               │11        │
+├─────────────────────────────────────────────┼──────────┤
+│"LUIS FONSI & DADDY YANKEE FT. JUSTIN BIEBER"│11        │
+├─────────────────────────────────────────────┼──────────┤
+│"LEWIS CAPALDI"                              │11        │
+├─────────────────────────────────────────────┼──────────┤
+│"TONES AND I"                                │11        │
+├─────────────────────────────────────────────┼──────────┤
+│"MILEY CYRUS"                                │10        │
+├─────────────────────────────────────────────┼──────────┤
+│"DAVE & CENTRAL CEE"                         │10        │
+├─────────────────────────────────────────────┼──────────┤
+│"CLEAN BANDIT "                              │9         │
+├─────────────────────────────────────────────┼──────────┤
+│"TAYLOR SWIFT"                               │9         │
+├─────────────────────────────────────────────┼──────────┤
+│"CALVIN HARRIS & DUA LIPA"                   │8         │
+├─────────────────────────────────────────────┼──────────┤
+│"ED SHEERAN & JUSTIN BIEBER"                 │8         │
+├─────────────────────────────────────────────┼──────────┤
+│"THE WEEKND"                                 │8         │
+├─────────────────────────────────────────────┼──────────┤
+│"LF SYSTEM"                                  │8         │
+├─────────────────────────────────────────────┼──────────┤
+│"CALVIN HARRIS & ELLIE GOULDING"             │8         │
+├─────────────────────────────────────────────┼──────────┤
+│"LITTLE MIX"                                 │7         │
+├─────────────────────────────────────────────┼──────────┤
+│"LIL NAS X"                                  │7         │
+├─────────────────────────────────────────────┼──────────┤
+│"WHAM!"                                      │7         │
+├─────────────────────────────────────────────┼──────────┤
+│"GAITAN/CASTILLO/ADASSA/FELIZ"               │7         │
+├─────────────────────────────────────────────┼──────────┤
+│"MARK RONSON FT. BRUNO MARS"                 │6         │
+├─────────────────────────────────────────────┼──────────┤
+│"CALVIN HARRIS & SAM SMITH"                  │6         │
+├─────────────────────────────────────────────┼──────────┤
+│"SHAWN MENDES & CAMILA CABELLO"              │6         │
+├─────────────────────────────────────────────┼──────────┤
+│"DABABY FT. RODDY RICCH"                     │6         │
+├─────────────────────────────────────────────┼──────────┤
+│"JOEL CORRY FT. MNEK"                        │6         │
+├─────────────────────────────────────────────┼──────────┤
+│"ELLIE GOULDING"                             │5         │
+├─────────────────────────────────────────────┼──────────┤
+│"JESS GLYNNE"                                │5         │
+├─────────────────────────────────────────────┼──────────┤
+│"LUKAS GRAHAM"                               │5         │
+├─────────────────────────────────────────────┼──────────┤
+│"MAJOR LAZER FT. JUSTIN BIEBER & M "         │5         │
+├─────────────────────────────────────────────┼──────────┤
+│"CAMILA CABELLO FT. YOUNG THUG"              │5         │
+├─────────────────────────────────────────────┼──────────┤
+│"ED SHEERAN FT. STORMZY"                     │5         │
+├─────────────────────────────────────────────┼──────────┤
+│"DOJA CAT"                                   │5         │
+└─────────────────────────────────────────────┴──────────┘
+
+
+
+
+
+
+// ---------- TASK 3 ----------
+
+MATCH (s:SpotifyData)
+WHERE s.Artist = 'ED SHEERAN'
+WITH collect(s.Title) AS Tracks, AVG(s.Valence) AS AverageValence
+RETURN Tracks, AverageValence;
+
+
+╒═══════════════════════════════════════════════════════════════════╤══════════════╕
+│Tracks                                                             │AverageValence│
+╞═══════════════════════════════════════════════════════════════════╪══════════════╡
+│["SHAPE OF YOU", "PERFECT", "BAD HABITS", "SHIVERS", "EYES CLOSED"]│0.5694        │
+└───────────────────────────────────────────────────────────────────┴──────────────┘
+
+
+
+
+// ---------- TASK 4 ----------
+
+MATCH (n:NumberOne)
+WITH n.Year AS Year, n.Artist AS Artist, SUM(n.WKS) AS TotalWeeks
+ORDER BY Year, TotalWeeks DESC
+WITH Year, COLLECT({Artist: Artist, TotalWeeks: TotalWeeks})[0] AS TopArtist
+RETURN Year, TopArtist.Artist AS Artist, TopArtist.TotalWeeks AS Weeks
+ORDER BY Year;
+
+
+╒════╤═════════════════════════╤═════╕
+│Year│Artist                   │Weeks│
+╞════╪═════════════════════════╪═════╡
+│2015│"JUSTIN BIEBER"          │10   │
+├────┼─────────────────────────┼─────┤
+│2016│"DRAKE FT. WIZKID & KYLA"│15   │
+├────┼─────────────────────────┼─────┤
+│2017│"ED SHEERAN"             │20   │
+├────┼─────────────────────────┼─────┤
+│2018│"DRAKE"                  │14   │
+├────┼─────────────────────────┼─────┤
+│2019│"TONES AND I"            │11   │
+├────┼─────────────────────────┼─────┤
+│2020│"THE WEEKND"             │8    │
+├────┼─────────────────────────┼─────┤
+│2021│"ED SHEERAN"             │15   │
+├────┼─────────────────────────┼─────┤
+│2022│"HARRY STYLES"           │10   │
+├────┼─────────────────────────┼─────┤
+│2023│"MILEY CYRUS"            │10   │
+└────┴─────────────────────────┴─────┘
